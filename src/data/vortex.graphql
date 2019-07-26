@@ -1,9 +1,11 @@
 type Artist {
   entityId: String!
+  partnerId: String!
 }
 
 type Artwork {
   entityId: String!
+  partnerId: String!
 }
 
 """
@@ -583,6 +585,7 @@ union RankedStatsUnion = Artist | Artwork | Show
 
 type Show {
   entityId: String!
+  partnerId: String!
 }
 
 type VisitorsByCountry {

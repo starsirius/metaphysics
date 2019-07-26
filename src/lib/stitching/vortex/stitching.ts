@@ -2,7 +2,7 @@ import { executableVortexSchema } from "./schema"
 import { amount } from "schema/fields/money"
 import { GraphQLSchema } from "graphql/type/schema"
 import gql from "lib/gql"
-import { sortBy } from "lodash"
+import { snakeCase, sortBy } from "lodash"
 
 const vortexSchema = executableVortexSchema({ removeRootFields: false })
 
@@ -16,7 +16,7 @@ const getMaxPrice = (thing: { listPrice: any }) => {
 export const vortexStitchingEnvironment = (localSchema: GraphQLSchema) => ({
   // The SDL used to declare how to stitch an object
   extensionSchema: gql`
-    union AnalyticsRankedEntityUnion = Artwork | Show | Artist
+    union AnalyticsRankedEntityUnion = Artwork | PartnerShow | Artist
     extend type AnalyticsPricingContext {
       appliedFiltersDisplay: String
     }
@@ -283,8 +283,9 @@ export const vortexStitchingEnvironment = (localSchema: GraphQLSchema) => ({
               ... on AnalyticsArtwork {
                 entityId
               }
-              ... on AnalyticsShow {
+              ... on AnalyticsPartnerShow {
                 entityId
+                partnerId
               }
               ... on AnalyticsArtist {
                 entityId
@@ -295,16 +296,18 @@ export const vortexStitchingEnvironment = (localSchema: GraphQLSchema) => ({
         resolve: (parent, _args, context, info) => {
           const removeVortexPrefix = name => name.replace("Analytics", "")
           const typename = parent.rankedEntity.__typename
-          const fieldName = removeVortexPrefix(typename).toLowerCase()
+          const fieldName = snakeCase(removeVortexPrefix(typename))
           const id = parent.rankedEntity.entityId
+          const args =
+            fieldName === "partner_show"
+              ? { partner_id: parent.rankedEntity.partnerId, show_id: id }
+              : { id }
           return info.mergeInfo
             .delegateToSchema({
               schema: localSchema,
               operation: "query",
               fieldName,
-              args: {
-                id,
-              },
+              args,
               context,
               info,
               transforms: vortexSchema.transforms,

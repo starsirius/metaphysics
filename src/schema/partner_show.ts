@@ -5,7 +5,6 @@ import {
   convertConnectionArgsToGravityArgs,
 } from "lib/helpers"
 import { find, flatten } from "lodash"
-import { HTTPError } from "lib/HTTPError"
 import numeral from "./fields/numeral"
 import { dateRange, exhibitionStatus } from "lib/date"
 import cached from "./fields/cached"
@@ -370,16 +369,17 @@ const PartnerShow: GraphQLFieldConfig<void, ResolverContext> = {
   type: PartnerShowType,
   description: "A Partner Show",
   args: {
-    id: {
+    partner_id: {
+      type: new GraphQLNonNull(GraphQLString),
+      description: "The slug or ID of the Partner",
+    },
+    show_id: {
       type: new GraphQLNonNull(GraphQLString),
       description: "The slug or ID of the PartnerShow",
     },
   },
-  resolve: (_root, { id }, { showLoader }) => {
-    return showLoader(id).then(show => {
-      if (!show.displayable) {
-        return new HTTPError("Show Not Found", 404)
-      }
+  resolve: (_root, { partner_id, show_id }, { partnerShowLoader }) => {
+    return partnerShowLoader({ partner_id, show_id }).then(show => {
       return show
     })
   },

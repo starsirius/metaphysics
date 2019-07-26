@@ -46,10 +46,12 @@ type AggregationCount {
 
 type AnalyticsArtist {
   entityId: String!
+  partnerId: String!
 }
 
 type AnalyticsArtwork {
   entityId: String!
+  partnerId: String!
 }
 
 # Publish artwork Series Stats
@@ -175,6 +177,7 @@ type AnalyticsPageviewStats {
 
 # Audience stats of a partner
 type AnalyticsPartnerAudienceStats {
+  commercialVisitors: Int!
   partnerId: String!
   period: AnalyticsQueryPeriodEnum!
   uniqueVisitors: Int!
@@ -234,6 +237,11 @@ type AnalyticsPartnerSalesTimeSeriesStats {
     symbol: String
     thousand: String = ","
   ): String
+}
+
+type AnalyticsPartnerShow {
+  entityId: String!
+  partnerId: String!
 }
 
 # Partner Stats
@@ -413,7 +421,7 @@ enum AnalyticsQueryPeriodEnum {
   SIXTEEN_WEEKS
 }
 
-union AnalyticsRankedEntityUnion = Artwork | Show | Artist
+union AnalyticsRankedEntityUnion = Artwork | PartnerShow | Artist
 
 # Top artworks, shows, or artists from a partner
 type AnalyticsRankedStats {
@@ -459,11 +467,7 @@ enum AnalyticsRankedStatsObjectTypeEnum {
 union AnalyticsRankedStatsUnion =
     AnalyticsArtist
   | AnalyticsArtwork
-  | AnalyticsShow
-
-type AnalyticsShow {
-  entityId: String!
-}
+  | AnalyticsPartnerShow
 
 type AnalyticsVisitorsByCountry {
   metric: String!
@@ -9559,8 +9563,11 @@ type Query {
 
   # A Partner Show
   partner_show(
+    # The slug or ID of the Partner
+    partner_id: String!
+
     # The slug or ID of the PartnerShow
-    id: String!
+    show_id: String!
   ): PartnerShow
 
   # A list of PartnerShows
@@ -11657,8 +11664,11 @@ type Viewer {
 
   # A Partner Show
   partner_show(
+    # The slug or ID of the Partner
+    partner_id: String!
+
     # The slug or ID of the PartnerShow
-    id: String!
+    show_id: String!
   ): PartnerShow
 
   # A list of PartnerShows
